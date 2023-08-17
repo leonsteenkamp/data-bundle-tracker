@@ -1,2 +1,5 @@
 # data-bundle-tracker
-Track data usage from SNMP In/OutOctets
+Track data usage using SNMP In/OutOctets
+
+My first Go program! Built quickly not beautifully.
+
