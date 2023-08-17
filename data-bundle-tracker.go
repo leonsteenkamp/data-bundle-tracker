@@ -27,7 +27,7 @@ type Options struct {
 	flagSnmpCommunity *string
 	flagSnmpVersion   *int
 	flagDebug         *bool
-	flagLoadVoucher       *string
+	flagLoadVoucher   *string
 }
 
 var opts Options
@@ -175,44 +175,44 @@ func writeFile(filename string, downCount *big.Int, upCount *big.Int) bool {
 	return writeOk
 }
 
-func processCount (snmpValueInOld *big.Int, snmpValueIn *big.Int, 
-	snmpValueOutOld *big.Int, snmpValueOut *big.Int) (*big.Int, *big.Int){
-		difUp := big.NewInt(0)
-		difUp1 := big.NewInt(0)
-		difDown := big.NewInt(0)
-		difDown1 := big.NewInt(0)
-		totalUp := big.NewInt(0)
-		totalDown := big.NewInt(0)
-		data_cnt_file := "data_cnt.txt"
+func processCount(snmpValueInOld *big.Int, snmpValueIn *big.Int,
+	snmpValueOutOld *big.Int, snmpValueOut *big.Int) (*big.Int, *big.Int) {
+	difUp := big.NewInt(0)
+	difUp1 := big.NewInt(0)
+	difDown := big.NewInt(0)
+	difDown1 := big.NewInt(0)
+	totalUp := big.NewInt(0)
+	totalDown := big.NewInt(0)
+	data_cnt_file := "data_cnt.txt"
 
-		downDataCnt, upDataCnt, _ := readFile(data_cnt_file)
+	downDataCnt, upDataCnt, _ := readFile(data_cnt_file)
 
-		// Could add support for counting roll over value if a rollover happened
+	// Could add support for counting roll over value if a rollover happened
 
-		if snmpValueIn.Cmp(snmpValueInOld) > 0 {
-			difDown.Sub(snmpValueIn, snmpValueInOld)
-		} else {
-			fmt.Printf("Warning: new value smaller than old value\n")
-		}
-		if snmpValueOut.Cmp(snmpValueOutOld) > 0 {
-			difUp.Sub(snmpValueOut, snmpValueOutOld)
-		} else {
-			fmt.Printf("Warning: new value smaller than old value\n")
-		}
-
-		totalDown.Add(difDown, downDataCnt)
-		totalUp.Add(difUp, upDataCnt)
-		writeFile(data_cnt_file, totalDown, totalUp)
-
-		log.Printf("Interval difference %d kB %d kB\n", difDown1.Div(difDown, big.NewInt(1000)),
-			difUp1.Div(difUp, big.NewInt(1000)))
-		log.Printf("Counts (down/up) %d MB %d MB\n", totalDown.Div(totalDown, big.NewInt(1000000)),
-			totalUp.Div(totalUp, big.NewInt(1000000)))
-
-			return difDown, difUp
+	if snmpValueIn.Cmp(snmpValueInOld) > 0 {
+		difDown.Sub(snmpValueIn, snmpValueInOld)
+	} else {
+		fmt.Printf("Warning: new value smaller than old value\n")
+	}
+	if snmpValueOut.Cmp(snmpValueOutOld) > 0 {
+		difUp.Sub(snmpValueOut, snmpValueOutOld)
+	} else {
+		fmt.Printf("Warning: new value smaller than old value\n")
 	}
 
-func loadVoucher (valueString string) {
+	totalDown.Add(difDown, downDataCnt)
+	totalUp.Add(difUp, upDataCnt)
+	writeFile(data_cnt_file, totalDown, totalUp)
+
+	log.Printf("Interval difference %d kB %d kB\n", difDown1.Div(difDown, big.NewInt(1000)),
+		difUp1.Div(difUp, big.NewInt(1000)))
+	log.Printf("Counts (down/up) %d MB %d MB\n", totalDown.Div(totalDown, big.NewInt(1000000)),
+		totalUp.Div(totalUp, big.NewInt(1000000)))
+
+	return difDown, difUp
+}
+
+func loadVoucher(valueString string) {
 	log.Printf("Loading voucher of %s GB", *opts.flagLoadVoucher)
 	voucherFile := "voucher.txt"
 	valueBigInt, _ := new(big.Int).SetString(valueString, 0)
@@ -223,15 +223,15 @@ func loadVoucher (valueString string) {
 	writeFile(voucherFile, voucherValueDown, voucherValueUp)
 }
 
-func updateVoucher (difDown *big.Int, difUp *big.Int) {
+func updateVoucher(difDown *big.Int, difUp *big.Int) {
 	voucherFile := "voucher.txt"
 	voucherValueDown, _, _ := readFile(voucherFile)
 	voucherValueDown.Sub(voucherValueDown, difDown)
 	voucherValueDown.Sub(voucherValueDown, difUp)
 	writeFile(voucherFile, voucherValueDown, big.NewInt(0))
 
-	log.Printf("Voucher value remaining: %d MB\n", 
-	voucherValueDown.Div(voucherValueDown, big.NewInt(1000000)))
+	log.Printf("Voucher value remaining: %d MB\n",
+		voucherValueDown.Div(voucherValueDown, big.NewInt(1000000)))
 }
 
 func main() {
@@ -249,7 +249,7 @@ func main() {
 		snmpValueOutOld := snmpValueOut
 
 		snmpValueIn, snmpValueOut = getOctets()
-		difDown, difUp := processCount(snmpValueInOld, snmpValueIn, 
+		difDown, difUp := processCount(snmpValueInOld, snmpValueIn,
 			snmpValueOutOld, snmpValueOut)
 		updateVoucher(difDown, difUp)
 

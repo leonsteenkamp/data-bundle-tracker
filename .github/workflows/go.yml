@@ -19,10 +19,43 @@ jobs:
     - name: Set up Go
       uses: actions/setup-go@v4
       with:
-        go-version: '1.20'
+        go-version: '1.21'
 
     - name: Build
       run: go build -v ./...
+    - name: Build darwin-arm64
+      run: env GOOS=darwin GOARCH=arm64 go build -o data-bundle-tracker-darwin-arm64 data-bundle-tracker.go
+    - name: Build windows-amd64
+      run: env GOOS=windows GOARCH=amd64 go build -o data-bundle-tracker-windows-amd64.exe data-bundle-tracker.go
 
     - name: Test
       run: go test -v ./...
+
+    - name: Pack release files
+      run: |
+        zip --junk-paths data-bundle-tracker data-bundle-tracker-darwin-arm64 data-bundle-tracker-windows-amd64.exe README.md
+
+    - name: Create Release
+      id: create_release
+      uses: actions/create-release@v1.0.0
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        tag_name: ${{ github.ref }}
+        release_name: Release ${{ github.ref }}
+        body: |
+          Changes in this Release
+          - Added feature A
+          - Fixed bug B
+        draft: false
+        prerelease: false
+
+    - name: Upload Release Asset
+      uses: actions/upload-release-asset@v1.0.1
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+      with:
+        upload_url: ${{ steps.create_release.outputs.upload_url }}
+        asset_path: ./dist/data-bundle-tracker.zip
+        asset_name: data-bundle-tracker.zip
+        asset_content_type: application/zip
