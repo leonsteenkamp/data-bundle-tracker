@@ -33,7 +33,13 @@ jobs:
       run: |
         zip --junk-paths data-bundle-tracker data-bundle-tracker-darwin-arm64 data-bundle-tracker-windows-amd64.exe README.md
 
+    - name: Compute the release tag
+      run: |
+        echo "release_tag=v`date '+%Y-%m-%d'`" >> $GITHUB_ENV
+
     - name: Release
       uses: softprops/action-gh-release@v0.1.15
       with:
+        tag_name: ${{ env.release_tag }}
+        # target_commitish: main
         files: data-bundle-tracker.zip
