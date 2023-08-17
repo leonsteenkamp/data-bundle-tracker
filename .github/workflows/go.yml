@@ -33,23 +33,7 @@ jobs:
       run: |
         zip --junk-paths data-bundle-tracker data-bundle-tracker-darwin-arm64 data-bundle-tracker-windows-amd64.exe README.md
 
-    - name: Create Release
-      id: create_release
-      uses: actions/create-release@v1.0.0
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    - name: Release
+      uses: softprops/action-gh-release@v0.1.15
       with:
-        tag_name: ${{ github.ref }}
-        release_name: Release ${{ github.ref }}
-        draft: false
-        prerelease: false
-
-    - name: Upload Release Asset
-      uses: actions/upload-release-asset@v1.0.1
-      env:
-        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-      with:
-        upload_url: ${{ steps.create_release.outputs.upload_url }}
-        asset_path: ./dist/data-bundle-tracker.zip
-        asset_name: data-bundle-tracker.zip
-        asset_content_type: application/zip
+        files: data-bundle-tracker.zip
