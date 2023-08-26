@@ -19,30 +19,33 @@ jobs:
       with:
         go-version: '1.21'
 
+    - name: Test
+      run: go test -v ./...
+
     - name: Build
       run: go build -v ./...
     - name: Build darwin-arm64
-      run: env GOOS=darwin GOARCH=arm64 go build -o data-bundle-tracker-darwin-arm64 data-bundle-tracker.go
-    # - name: Build windows-amd64
-    #   run: env GOOS=windows GOARCH=amd64 go build -o data-bundle-tracker-windows-amd64.exe data-bundle-tracker.go
-
-    - name: Test
-      run: go test -v ./...
+      run: |
+        env GOOS=darwin GOARCH=arm64 \
+        go build -o data-bundle-tracker-darwin-arm64 \
+          data-bundle-tracker.go
+    - name: Build windows-amd64
+      run: |
+        env GOOS=windows GOARCH=amd64 \
+        go build -o data-bundle-tracker-windows-amd64.exe \
+          data-bundle-tracker.go
 
     - name: Pack release files
       if: startsWith(github.ref, 'refs/tags/')
       run: |
-        zip --junk-paths data-bundle-tracker data-bundle-tracker-darwin-arm64 data-bundle-tracker-windows-amd64.exe README.md
-
-    # - name: Compute the release tag
-    #   if: startsWith(github.ref, 'refs/tags/')
-    #   run: |
-    #     echo "release_tag=v`date '+%Y-%m-%d'`" >> $GITHUB_ENV
+        zip --junk-paths data-bundle-tracker-${{ github.ref_name }} \
+          data-bundle-tracker-darwin-arm64 \
+          data-bundle-tracker-windows-amd64.exe \
+          README.md
 
     - name: Release
       uses: softprops/action-gh-release@v0.1.15
       if: startsWith(github.ref, 'refs/tags/')
       with:
-        # tag_name: ${{ env.release_tag }}
-        # target_commitish: main
-        files: data-bundle-tracker.zip
+        tag_name: ${{ github.ref_name }}
+        files: data-bundle-tracker-${{ github.ref_name }}.zip
